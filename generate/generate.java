@@ -1,3 +1,5 @@
+package com.generate;
+
 import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
@@ -261,12 +263,14 @@ public class generate
             implementation.append(getNativeClassName(paramTypes[i]));
         }
         implementation.append("> constructor(clazz(), \""+getSignature(member)+"\");\n");
-        implementation.append("    return constructor.construct(");
+        implementation.append("    " + getNativeClassNameLocalRef(cls) + "r =  constructor.construct(");
         for (int i=0; i<paramTypes.length; i++) {
             if (i > 0) implementation.append(", ");
             implementation.append("a"+i);
         }
         implementation.append(");\n");
+        implementation.append("    jnipp::Env::throwCPP();\n");
+        implementation.append("    return r;\n");
         implementation.append("}\n");
     }
 
@@ -324,7 +328,10 @@ public class generate
         declaration.append("{\n");
         declaration.append("public:\n");
         declaration.append("    using parent = " + parent + ";\n");
-        declaration.append("    using parent::parent;\n");
+        declaration.append("    " + defClsName + "(jobject o) : " + parent + "(o) {}" );
+        //declaration.append("    using parent::parent;\n");
+        declaration.append("    typedef jnipp::GlobalRef<" + defClsName + "> GRef;\n");
+        declaration.append("    typedef jnipp::LocalRef<" + defClsName + "> LRef;\n");
 
         handleGetClass();
 
